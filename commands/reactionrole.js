@@ -1,45 +1,24 @@
-exports.run = async (message, args, client, Discord) => {
-    const channel = '522070886665158679';
-    const uzytkownik = message.guild.roles.cache.find(role => role.name === "uzytkownik");
+exports.run =  async (client, message, args, Discord) => {
+        const { channel } = require('../config.json');
 
-    const UzytkownikEmoji = '🥶';
+        const { MaleEmoji } = require('../config.json');
+        const { MaleName } = require('../config.json');
+        const { FemaleEmoji } = require('../config.json');
+        const { FemaleName } = require('../config.json');
+        
 
-    let embed = new Discord.MessageEmbed()
-    .setColor('#e42643')
-    .setTitle('Wybierz role byczku!')
-    .setDescription('Wybierz coś no!')
-        + `${UzytkownikEmoji} by być byczkiem!`;
+        const { MessageEmbed } = require('discord.js')
+        let AAAAembed = new MessageEmbed()
+            .setColor('#17b111')
+            .setTitle('React to the corresponding emojis to get personalized notifications!')
+            .setDescription('Once reacting you will gain your roles!\n\n'
+                + `${MaleEmoji} for ${MaleName}\n` //copy this line
+                + `${FemaleEmoji} for ${FemaleName}\n`)
 
-    let messageEmbed = await message.channel.send(embed);
-    messageEmbed.react(UzytkownikEmoji);
+        console.log("Reactionrole Message Created")
+        let msg = await message.channel.send({ embeds: [AAAAembed]});
+        msg.react(`${MaleEmoji}`) //copy this
+        msg.react(`${FemaleEmoji}`)
+    }
 
-    client.on('messageReactionAdd', async (reaction, user) =>{
-        if (reaction.message.partial) await reaction.message.fetch();
-        if (reaction.partial) await reaction.fetch();
-        if (user.bot) return;
-        if (!reaction.message.guild) return;
-
-        if (reaction.message.channel.id == channel) {
-            if (reaction.emoji.name === UzytkownikiEmoji) {
-                await reaction.message.guild.members.cache.get(user.id).roles.add(uzytkownik);
-            } else {
-                return;
-            }
-        }
-    });
-
-    client.on('messageReactionRemove', async (reaction, user) =>{
-        if (reaction.message.partial) await reaction.message.fetch();
-        if (reaction.partial) await reaction.fetch();
-        if (user.bot) return;
-        if (!reaction.message.guild) return;
-
-        if (reaction.message.channel.id == channel) {
-            if (reaction.emoji.name === UzytkownikEmoji) {
-                await reaction.message.guild.members.cache.get(user.id).roles.remove(uzytkownik);
-            } else {
-                return;
-            }
-        }
-    });
-}
+    exports.name = "reactionrole";
