@@ -9,6 +9,7 @@
   "author": "Dine",
   "license": "ISC",
   "dependencies": {
+    "cron": "^1.8.2",
     "discord-giveaways": "^5.1.1",
     "discord.js": "^13.6.0",
     "ms": "^2.1.3"
