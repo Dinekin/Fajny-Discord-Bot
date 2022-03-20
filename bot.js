@@ -1,7 +1,10 @@
 const fs = require('fs');
+const startup = new Date()
+const mongoose = require('mongoose');
+const modlogsSchema = require('./models/modlogs');
 const { GiveawaysManager } = require('discord-giveaways');
 const config = require('./config.json');
-const { Client, Intents, Collection } = require('discord.js');
+const { Client, Intents, Collection, Message, MessageEmbed } = require('discord.js');
 const { channel } = require('./config.json');
 const { GP0001Emoji } = require('./config.json')
 const { GP0001Role } = require('./config.json')
@@ -19,12 +22,30 @@ const { GP2330Emoji } = require('./config.json')
 const { GP2330Role } = require('./config.json')
 
 const cron = require("cron").CronJob;
+mongoose.connect('mongodb://localhost:27017/How');
 
 //Flagi potrzebne do jakichkolwiek funkcji bota
 const client = new Client({ partials: ["MESSAGE", "CHANNEL", "REACTION"], intents: ["GUILD_MESSAGES", "GUILDS", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES", "GUILD_MESSAGE_TYPING", "DIRECT_MESSAGE_REACTIONS"] });
 
 client.config = config;
 client.commands = new Collection();
+
+
+client.modlogs = async function({ Member, Action, Color, Reason }, message )  {
+    const data = await  modlogsSchema.findOne({ Guild: message.guild.id })
+    if(!data) return;
+
+    const channel = message.guild.channels.cache.get(data.Channel);
+    const logsEmbed = new MessageEmbed()
+        .setColor(Color)
+        .setDescription(`Powód: ${Reason || 'Nie podano powodu!'}`)
+        .addField('Member', `${Member.user.tag}`)
+        .setThumbnail(Member.user.displayAvatarURL())
+        .setTitle(`Wykonana akcja: ${Action}`)
+
+    channel.send({ embeds: [logsEmbed] })
+};
+
 const commands = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commands) {
     const commandName = file.split(".")[0];
@@ -39,11 +60,13 @@ for (const file of events) {
     const eventName = file.split(".")[0];
     const event = require(`./events/${file}`)
     client.on(eventName, event.bind(null, client));
-    }
+}
     
 
 client.once('ready', () => {
-    console.log('Gotowe byczku!');
+    const ready = new Date()
+    const diff = ready.getTime() - startup.getTime()
+    console.log(`Gotowe byczku, załadowałem się w ${diff}ms!`);
 });
 
 client.guilds.cache.forEach(g => {      
@@ -230,6 +253,7 @@ const GP2330 = new cron('30 23 * * *', async function() {
         });
     }
 });
+
 GP0001.start();
 GP0700.start();
 GP1100.start();
